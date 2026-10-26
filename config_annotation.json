@@ -1,0 +1,52 @@
+{
+  "env_paras": {
+    "distribution": "SD1 or SD2; used consistently for online generation and dataset lookup",
+    "num_jobs": "Positive integer; size code is jobs followed by two-digit machine count",
+    "num_mas": "Positive integer machine count",
+    "batch_size": "Parallel training instances; reused for paraller updates with fresh policy rollouts",
+    "valid_batch_size": "Fixed validation instances from data_dev/<distribution>/<size>"
+  },
+  "model_paras": {
+    "embedding_dim": "Independent direct projections map operation/machine/pair inputs of 6/5/4 dimensions to this width; 128 gives a 384-dimensional actor input; supplementary state descriptors are always included",
+    "head_num": "Attention heads; embedding_dim/head_num must be an even integer for RoPE",
+    "block_num": "FRDT Transformer blocks",
+    "ff_hidden_dim": "Transformer feed-forward width",
+    "dropout": "Must be zero so PPO rollout and update log probabilities agree",
+    "use_future_demand": "Enable FRDT's explicit future demand and associated delay channels",
+    "use_delay_propagation": "Enable action-conditioned relaxed delay propagation inside FRDT; requires use_future_demand=true",
+    "actor_hidden_dim": "Actor MLP hidden width",
+    "critic_hidden_dim": "Critic MLP hidden width",
+    "actor_layers": "Number of actor Linear layers",
+    "critic_layers": "Number of critic Linear layers"
+  },
+  "train_paras": {
+    "lr": "Fixed Adam learning rate throughout training",
+    "betas": "Adam beta1 and beta2",
+    "gamma": "Use 1.0 for the undiscounted makespan objective",
+    "gae_lambda": "GAE trace parameter; advantages are normalized globally across all transitions in the complete rollout",
+    "K_epochs": "PPO epochs per rollout",
+    "eps_clip": "Policy probability-ratio clipping range",
+    "A_coeff": "Fixed coefficient of the clipped PPO policy loss",
+    "vf_coeff": "Value loss coefficient",
+    "entropy_mode": "structural_kl enables ASER; shannon is the fixed-entropy ablation",
+    "entropy_coeff": "Initial adaptive ASER coefficient; fixed coefficient for the Shannon ablation",
+    "kl_target": "ASER normalized KL-to-job-balanced-reference target for exploration",
+    "max_grad_norm": "Global model gradient norm limit",
+    "max_iterations": "Number of fresh-rollout PPO updates; must cover at least one validation interval",
+    "paraller": "Resample all batch_size training instances every this many updates; 50 reuses each batch for 50 fresh rollouts",
+    "save_timestep": "Validation interval in updates; save the best model on validation improvement",
+    "minibatch_size": "Transitions per gradient-accumulation chunk; one optimizer step per PPO epoch after processing the full rollout"
+  },
+  "test_paras": {
+    "distribution": "Training-model distribution and default distribution for a bare data_path size code; null inherits env_paras.distribution",
+    "num_jobs": "Training-model job count only; null inherits env_paras.num_jobs; does not select or restrict test data",
+    "num_mas": "Training-model machine count only; null inherits env_paras.num_mas; does not select or restrict test data",
+    "data_path": "Test directory independent of model size: 3010, SD1/4010, data_test/SD2/3010, Public, or an absolute path; reference size is read from instances",
+    "num_ins": "Maximum number of test instances",
+    "sample": "false=greedy; true=best of num_sample independent schedules",
+    "num_sample": "Number of sampled schedules per instance",
+    "public_ins": "Legacy Public shortcut only when data_path is absent; use data_path=Public to select public benchmarks"
+  },
+  "train_seed": "Random seed for model initialization, training-instance generation, rollout sampling, and PPO updates",
+  "test_seed": "Random seed for testing sampled evaluation"
+}

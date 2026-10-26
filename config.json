@@ -1,0 +1,55 @@
+{
+  "env_paras": {
+    "distribution": "SD2",
+    "num_jobs": 20,
+    "num_mas": 10,
+    "batch_size": 50,
+    "valid_batch_size": 100
+  },
+  "model_paras": {
+    "embedding_dim": 128,
+    "head_num": 8,
+    "block_num": 2,
+    "ff_hidden_dim": 512,
+    "dropout": 0.0,
+    "use_future_demand": true,
+    "use_delay_propagation": true,
+    "actor_hidden_dim": 64,
+    "critic_hidden_dim": 64,
+    "actor_layers": 3,
+    "critic_layers": 3
+  },
+  "train_paras": {
+    "lr": 3e-04,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "gamma": 1.0,
+    "gae_lambda": 0.99,
+    "K_epochs": 3,
+    "eps_clip": 0.2,
+    "A_coeff": 1.0,
+    "vf_coeff": 0.5,
+    "entropy_mode": "structural_kl",
+    "entropy_coeff": 0.01,
+    "kl_target": 0.5,
+    "max_grad_norm": 1.0,
+    "max_iterations": 5000,
+    "paraller": 50,
+    "save_timestep": 50,
+    "minibatch_size": 128
+  },
+  "test_paras": {
+    "distribution": "SD2",
+    "num_jobs": 20,
+    "num_mas": 10,
+    "data_path": "2010",
+    "num_ins": 100,
+    "sample": true,
+    "num_sample": 100,
+    "public_ins": true
+  },
+  "train_seed": 300,
+  "test_seed": 42
+}
