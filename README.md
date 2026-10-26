@@ -53,11 +53,6 @@ For GPU execution, install a PyTorch build compatible with your CUDA environment
 | `README.md` | Project overview, repository layout, and execution instructions. |
 | `LICENSE` | Repository license terms. |
 
-## Datasets and Environment
-
-Size codes combine the job count with a two-digit machine count: `2010` denotes 20 jobs and 10 machines. Both distributions provide validation sizes `1005`, `2005`, `1510`, and `2010`; test sets additionally include `3010` and `4010`. Training instances are generated online. The environment retains unfinished operations, permits advance machine reservations, and normalizes processing times by each instance's fixed maximum. Assignments are appended to machine schedules, with starts determined by job and machine availability.
-Synthetic references are loaded from `or_solution/SD1/solution_<jobs>x<machines>.npy` or `or_solution/SD2/solution_<jobs>x<machines>+mix.npy`. Preserve the complete test folders and original filenames for reference alignment; use `--num-ins` to evaluate a subset. Public evaluation uses `data_test/BenchDataSolution.csv`.
-
 ## Training
 
 The supplied `config.json` trains an SD2 model with 15 jobs and 10 machines. Select SD1 or another size through the corresponding command-line options:
@@ -65,10 +60,6 @@ The supplied `config.json` trains an SD2 model with 15 jobs and 10 machines. Sel
 ```bash
 python train.py --distribution SD2 --jobs 20 --machines 10 --device cuda:0 --train_seed 300
 ```
-
-The supplied configuration uses 5,000 updates, 50 parallel instances, three PPO epochs, learning rate 0.0003, discount factor 1.0, and GAE parameter 0.99. `train_paras.paraller=50` resamples instances every 50 updates; each update collects fresh trajectories. Greedy validation evaluates 100 fixed instances every 50 updates, controlled by `save_timestep`, and selects the lowest mean validation makespan.
-`train_paras.minibatch_size=128` controls transition chunks for memory-efficient gradient accumulation. Each epoch accumulates gradients over the complete rollout and takes one optimizer step. Advantages are normalized across the rollout; the critic uses detached pooled encoder features and SmoothL1 loss. ASER updates its exploration coefficient once per rollout.
-Run outputs are saved under `train_results/`. JSONL records contain update, policy, value, exploration, loss, structural KL, sampled makespan, and elapsed time; validation records additionally contain current and best validation scores. Use `--config`, `--updates`, `--batch-size`, and `--validation-count` to override run settings.
 
 ## Testing
 
@@ -86,14 +77,6 @@ python test.py --distribution SD1 --jobs 20 --machines 10 --data-path 4010 --sam
 python test.py --distribution SD1 --jobs 20 --machines 10 --data-path Public --samples 1 --num-ins 130 --device cuda:0 --validate
 ```
 
-Without `--samples`, `test_paras.sample=false` selects greedy decoding; otherwise `num_sample` controls the sampling budget. A budget of one always selects greedy decoding. The supplied test settings independently select an SD1 model trained on 20 jobs and 10 machines and evaluate `data_test/SD1/3010`. To test the supplied training configuration instead, select SD2 with 15 jobs and 10 machines. `--validate` checks schedule feasibility, while `--batch-size` and `--sample-batch-size` control concurrent instances and samples.
-Testing prints the dataset, model path, instance progress, mean makespan, mean instance-wise percentage gap, and elapsed time. Public results also include separate summaries for each benchmark family. `makespan.csv` contains `index`, `file_name`, `makespan`, and `gap (%)`. The mean gap averages each instance's relative deviation from its reference; sampling reports the best schedule per instance.
-
-## Configuration and Reproducibility
-
-FRDT concatenates six operation descriptors (minimum processing time, job availability, mean processing time, compatibility ratio, log-transformed suffix work and operation count), five machine descriptors (availability, mean processing time, log-transformed candidate and remaining-operation counts, and future workload), and four pair descriptors (processing time, future workload, own-job delay, and other-job delay) into separate feature vectors. Three independent linear layers map these vectors to 128-dimensional embeddings, giving a 384-dimensional actor input. Supplementary descriptors are always included; train new checkpoints for this architecture.
-The full method enables `model_paras.use_future_demand` and `use_delay_propagation`, with `train_paras.entropy_mode="structural_kl"`. Setting `use_delay_propagation=false` zeros the delay inputs; `use_future_demand=false` zeros future workload and delay inputs while retaining the supplementary state descriptors. Setting `entropy_mode="shannon"` uses fixed-coefficient entropy regularization. Train separate models for ablations.
-Seeds are set through `train_seed` and `test_seed` in `config.json`, or `--train_seed` and `--test_seed`. Training and testing request deterministic PyTorch operations. Keep software, hardware, and execution settings consistent for reproducibility. Model selection uses validation data; test instances and reference solutions are reserved for evaluation.
 
 ## References
 
